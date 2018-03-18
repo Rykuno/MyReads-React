@@ -2,8 +2,11 @@ import React from 'react';
 import '../css/App.css';
 import Bookshelf from './Bookshelf';
 import Header from './Header';
+import Search from './Search';
 import * as BooksAPI from '../utils/BooksAPI';
 import sortBy from 'sort-by';
+import { Route } from 'react-router-dom';
+import SearchPage from './SearchPage';
 
 class BooksApp extends React.Component {
   state = {
@@ -14,16 +17,12 @@ class BooksApp extends React.Component {
      * pages, as well as provide a good URL they can bookmark and share.
      */
     showSearchPage: false,
-    currentlyReading: [],
-    wantToRead: [],
-    read: [],
     books: []
   }
 
   componentWillMount() {
     BooksAPI.getAll()
     .then(books => {
-      console.log(books);
       this.sortBooks(books);
     })
     .catch(e => {
@@ -33,26 +32,9 @@ class BooksApp extends React.Component {
 
   /**
    * Sort books based on their shelf and set the state.
-   * TODO: Update API too
    */
   sortBooks = (books) => {
-      let currentlyReading= [], wantToRead = [], read=[];
-      for (let book of books) {
-        switch (book.shelf) {
-          case 'currentlyReading':
-            currentlyReading.push(book);
-            break;
-          case 'wantToRead':
-            wantToRead.push(book);
-            break;
-          case 'read':
-            read.push(book);
-            break;
-          default:
-            break;
-        }
-      }
-      
+      books.sort(sortBy('title'));
       this.setState(state => ({
         books
       }));
@@ -60,74 +42,78 @@ class BooksApp extends React.Component {
 
   /**
    * Changes the book from one shelf to another
-   * TODO: Update API too
    */
   changeShelf = (toShelf, book) => {
-    console.log(`${toShelf} from ${book.title}`);
     const books = this.state.books;
+    console.log(books);
+    
+    //Locate the book and change the shelf
     const bookIndex = books.findIndex((obj => obj.id === book.id));    
-    books[bookIndex].shelf = toShelf;
-    this.setState(state => ({
-      books: books
-    }));
+    const foundBook = books[bookIndex]    
+    foundBook.shelf = toShelf;
+
+    //Update API to reflect updates.
+    BooksAPI.update(foundBook, toShelf)
+    .then(res => {
+      this.setState(state => ({
+        books: books
+      }));
+    })
+    .catch(e => {
+      alert("Unable to Change Shelf");
+    })
   }
 
-  getBooksForShelf = () => {  
-    const books = this.state.books;
-    
-    let currentlyReading = [];
-    let wantToRead = [];
-    let read = [];
-
-    for (let book of books){      
-      switch (book.shelf) {
-        case 'currentlyReading':
-          currentlyReading.push(book);
-          break;
-        case 'wantToRead':
-          wantToRead.push(book);
-          break;
-        case 'read':
-          read.push(book);
-          break;
-        default:
-          break;
-      }
-    }
-
-    //Sort by titles
-    currentlyReading.sort(sortBy('title'));
-    wantToRead.sort(sortBy('title'));
-    read.sort(sortBy('title'));
-
-    return {currentlyReading, wantToRead, read};
+  addBook = (toShelf, book) => {
+    console.log(`Changing Bookshelf ${book} to ${toShelf}`);
+    let bookToAdd = book
+    bookToAdd.shelf = toShelf
+    this.setState(state => ({
+      books: state.books.concat(bookToAdd)
+    }))
   }
 
   render() {
-    const { currentlyReading, wantToRead, read} = this.getBooksForShelf();
-    console.log(currentlyReading);
+    const { books } = this.state;
     
     return (
       <div>
-        <Header/>
-        <Bookshelf 
-          books={currentlyReading}
-          title={'Currently Reading'}
-          changeShelf={(toShelf, book) => {
-            this.changeShelf(toShelf, book);
-        }}/>
-        <Bookshelf 
-          books={wantToRead}
-          title={'Want To Read'}
-          changeShelf={(toShelf, book) => {
-            this.changeShelf(toShelf, book);
-        }}/>
-        <Bookshelf 
-          books={read}
-          title={'Read'}
-          changeShelf={(toShelf, book) => {
-            this.changeShelf(toShelf, book);
-        }}/>
+        <Route exact path='/' render={() => (
+          <div>
+          <Header/>
+          <Bookshelf 
+            books={books}
+            title={'Currently Reading'}
+            shelf={'currentlyReading'}
+            changeShelf={(toShelf, book) => {
+              this.changeShelf(toShelf, book);
+          }}/>
+          <Bookshelf 
+            books={books}
+            title={'Want To Read'}
+            shelf={'wantToRead'}
+            changeShelf={(toShelf, book) => {
+              this.changeShelf(toShelf, book);
+          }}/>
+          <Bookshelf 
+            books={books}
+            title={'Read'}
+            shelf={'read'}
+            changeShelf={(toShelf, book) => {
+              this.changeShelf(toShelf, book);
+          }}/>
+          <Search/>
+        </div>
+        )}></Route>
+
+        <Route path='/search' render={() => (
+            <SearchPage
+              readingList={this.state.books}
+              changeShelf={(toShelf, book) => {
+                this.addBook(toShelf, book);
+              }}
+            />
+        )} />
       </div>
 
 

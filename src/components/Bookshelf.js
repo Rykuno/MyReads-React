@@ -4,7 +4,8 @@ import Book from './Book';
 class Bookshelf extends Component {
 
     renderBooks = () => {
-        const { books, changeShelf } = this.props;
+        let { books, changeShelf,  shelf} = this.props;
+        books = books.filter(book => book.shelf === shelf);
         return books.map((book, index) => (
             <li key={index}>
                 <Book 

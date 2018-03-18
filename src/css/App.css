@@ -166,9 +166,24 @@ body, .app {
 .book-cover {
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   background: #eee;
+  transition: transform .2s; /* Animation */
 }
+
+.book-cover:hover {
+  transform: scale(1.1); 
+  cursor: pointer;
+}
+
 .book-cover-title {
   padding: 20px 10px 0;
   text-align: center;
   font-size: 0.8em;
+}
+
+.no-results {
+  text-align: center;
+  color: grey;
+  border: solid 5px #2e7d32;
+  margin-right: 50px;
+  margin-left: 50px;
 }
