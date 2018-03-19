@@ -183,7 +183,7 @@ body, .app {
 .no-results {
   text-align: center;
   color: grey;
-  border: solid 5px #2e7d32;
+  border: solid 5px lightgray;
   margin-right: 50px;
   margin-left: 50px;
 }

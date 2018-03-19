@@ -32,14 +32,13 @@ class SearchPage extends Component {
     handleChange = (e) => {
         e.preventDefault();
         this.setState({
-            query: e.target.value.trim()
+            query: e.target.value
         });
 
         if (this.state.query.length > 1) {
             this.getBooksForSearch();
         }
     }
-
 
     createBooks = () => {
         if (this.state.books.length > 0) {
@@ -58,12 +57,12 @@ class SearchPage extends Component {
     }
 
     noResults = () => {
-        if (this.state.noResults === true) {
+        if (this.state.noResults === true && this.state.query.length > 0) {
             return <div className='no-results'><h2>No Results for '{this.state.query}'</h2></div>
         }
     }
 
-    render() {        
+    render() {                
         return (
             <div className="search-books">
             <div className="search-books-bar">
